@@ -1,0 +1,17 @@
+version: '3.8'
+services:
+  app:
+    build: ./
+    ports:
+      - "8080:8080"
+    environment:
+      - OPENAI_KEY=${OPENAI_KEY}
+      - GCS_KEY=${GCS_KEY}
+      - GCS_ID=${GCS_ID}
+      - BING_KEY=${BING_KEY}
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
