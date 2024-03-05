@@ -26,7 +26,7 @@ func SetupRoutes() {
 
 	router.Use(static.Serve("/", static.LocalFile("./web/build", true)))
 
-	api := router.Group("/api")
+	api := router.Group("/v1")
 	{
 		api.GET("/", func(c *gin.Context) {
 			c.JSON(http.StatusOK, gin.H{
