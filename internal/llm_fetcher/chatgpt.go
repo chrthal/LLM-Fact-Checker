@@ -1,4 +1,4 @@
-package chatgpt
+package llm_fetcher
 
 import (
 	"context"
