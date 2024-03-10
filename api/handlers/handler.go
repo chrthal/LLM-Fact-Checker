@@ -9,20 +9,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var resolvedJobs []models.Job
+var (
+	id = 0
+)
 
-var test_job = models.Job{
-	ID:            1,
-	Question:      "Whats the capital of france?",
-	PagesToCrawl:  15,
-	SearchEngines: 2,
-	Status:        "In Progress",
-}
-
-func SetupRoutes() {
+func SetupRoutes(queue *models.JobQueue, resolvedJobs *models.JobQueue) {
 	router := gin.Default()
-
-	resolvedJobs = append(resolvedJobs, test_job)
 
 	router.Use(static.Serve("/", static.LocalFile("./web/build", true)))
 
@@ -35,7 +27,12 @@ func SetupRoutes() {
 		})
 		// Endpoint to fetch resolved jobs
 		api.GET("/resolvedJobs", func(c *gin.Context) {
-			c.JSON(http.StatusOK, resolvedJobs)
+			queue.Mu.Lock()
+			resolvedJobs.Mu.Lock()
+			allJobs := append(resolvedJobs.Jobs, queue.Jobs...)
+			resolvedJobs.Mu.Unlock()
+			queue.Mu.Unlock()
+			c.JSON(http.StatusOK, allJobs)
 		})
 
 		// Endpoint to add new job
@@ -47,12 +44,16 @@ func SetupRoutes() {
 			}
 
 			// Assign ID and add new job to the list of resolved jobs
-			newJob.ID = len(resolvedJobs) + 1
-			resolvedJobs = append(resolvedJobs, newJob)
+			newJob.ID = id
+
+			queue.Mu.Lock()
+			queue.Jobs = append(queue.Jobs, newJob)
+			queue.Mu.Unlock()
 
 			fmt.Printf("New job added: %+v\n", newJob)
 
 			c.JSON(http.StatusOK, gin.H{"success": true})
+			id += 1
 		})
 	}
 
