@@ -1,9 +1,9 @@
 # Start from the official Go image.
-FROM golang:1.21 as builder
+FROM golang:1.22.1 as builder
 
 WORKDIR /app
 
-COPY go.mod ./
+COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
 
@@ -29,7 +29,7 @@ FROM alpine:latest
 
 RUN apk --no-cache add ca-certificates
 
-WORKDIR /root/
+WORKDIR /root
 
 # Copy the Pre-built backend binary file from the previous stage
 COPY --from=builder /app/llm_checker .
