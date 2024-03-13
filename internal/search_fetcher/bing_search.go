@@ -63,7 +63,7 @@ type BingAnswer struct {
 	} `json:"rankingResponse"`
 }
 
-func BingSearch(query string, numResults int) []string {
+func bingSearch(query string, numResults int) []string {
 	var urls []string
 
 	const endpoint = "https://api.bing.microsoft.com/v7.0/search"
@@ -114,8 +114,7 @@ func BingSearch(query string, numResults int) []string {
 	}
 
 	// Iterate over search results and print the result name and URL.
-	for result_index, result := range ans.WebPages.Value {
-		fmt.Println(result_index, result.Name, "||", result.URL)
+	for _, result := range ans.WebPages.Value {
 		urls = append(urls, result.URL)
 	}
 

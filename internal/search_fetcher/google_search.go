@@ -2,6 +2,7 @@ package search_fetcher
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"os"
 
@@ -9,9 +10,9 @@ import (
 	"google.golang.org/api/option"
 )
 
-func GoogleSearch(query string, numResults int) []string {
+func googleSearch(query string, numResults int) []string {
 	var results customsearch.Search
-	var links []string
+	var urls []string
 
 	// Set up Google Custom Search API credentials and client
 	apiKey := os.Getenv("GCS_KEY") // Your Google API key
@@ -37,7 +38,8 @@ func GoogleSearch(query string, numResults int) []string {
 	}
 
 	for index := 0; index < numResults; index++ {
-		links = append(links, results.Items[index].Link)
+		urls = append(urls, results.Items[index].Link)
 	}
-	return links
+	fmt.Println("Google search for: " + query + "URLs: " + urls[0])
+	return urls
 }
