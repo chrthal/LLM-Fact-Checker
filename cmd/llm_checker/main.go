@@ -2,6 +2,7 @@ package main
 
 import (
 	api "chrthal/llm-fact-checker/api/handlers"
+	"chrthal/llm-fact-checker/internal/search_fetcher"
 	"chrthal/llm-fact-checker/models"
 	"fmt"
 
@@ -43,19 +44,22 @@ func queueWatchdog() {
 
 			// Remove the first job from the queue
 			jobQueue.Jobs = jobQueue.Jobs[1:]
-
-			// Unlock the queue
 			jobQueue.Mu.Unlock()
 
-			// Process the job
-			// TODO: Replace this with your actual job processing code
 			fmt.Printf("Processing job: %+v\n", job)
+
 			job.Status = "Resolved"
+
+			// Fetch search result urls
+			for i := range job.SearchEngineData {
+				searchEngineData := &job.SearchEngineData[i]
+				*searchEngineData = search_fetcher.SearchFetcher(*searchEngineData, job.Question, job.PagesToCrawl)
+			}
 
 			resolvedJobs.Mu.Lock()
 			resolvedJobs.Jobs = append(resolvedJobs.Jobs, job)
 			resolvedJobs.Mu.Unlock()
 		}
-		time.Sleep(time.Second) // sleep for 1 second
+		time.Sleep(time.Second)
 	}
 }

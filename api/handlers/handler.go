@@ -37,14 +37,25 @@ func SetupRoutes(queue *models.JobQueue, resolvedJobs *models.JobQueue) {
 
 		// Endpoint to add new job
 		api.POST("/addJob", func(c *gin.Context) {
-			var newJob models.Job
-			if err := c.BindJSON(&newJob); err != nil {
+			var newRequest models.JobRequest
+			if err := c.BindJSON(&newRequest); err != nil {
 				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 				return
 			}
 
-			// Assign ID and add new job to the list of resolved jobs
-			newJob.ID = id
+			newJob := models.Job{
+				ID:               id,
+				Question:         newRequest.Question,
+				PagesToCrawl:     newRequest.PagesToCrawl,
+				SearchEngineData: make([]models.SearchEngineData, len(newRequest.SearchEngines)),
+			}
+
+			for i, engine := range newRequest.SearchEngines {
+				newJob.SearchEngineData[i] = models.SearchEngineData{
+					SearchEngine: engine,
+					Urls:         make([]string, 0),
+				}
+			}
 
 			queue.Mu.Lock()
 			queue.Jobs = append(queue.Jobs, newJob)
