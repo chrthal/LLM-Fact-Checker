@@ -1,7 +1,7 @@
 package search_fetcher
 
 import (
-	"fmt"
+	"log"
 
 	"chrthal/llm-fact-checker/models"
 )
@@ -10,14 +10,14 @@ func SearchFetcher(searchEngineData models.SearchEngineData, query string, resul
 	switch searchEngineData.SearchEngine.String() {
 	case "Google":
 		urls := googleSearch(query, results)
-		fmt.Printf("Known search engine: %s\n Result 0: %s", searchEngineData.SearchEngine.String(), urls[0])
+		log.Printf("Known search engine: %s\n Num Results: %d\n", searchEngineData.SearchEngine.String(), len(urls))
 		searchEngineData.Urls = append(searchEngineData.Urls, urls...)
 	case "Bing":
 		urls := bingSearch(query, results)
-		fmt.Printf("Known search engine: %s\n Result 0: %s", searchEngineData.SearchEngine.String(), urls[0])
+		log.Printf("Known search engine: %s\n Num Results: %d\n", searchEngineData.SearchEngine.String(), len(urls))
 		searchEngineData.Urls = append(searchEngineData.Urls, urls...)
 	default:
-		fmt.Printf("Unknown search engine: %s\n", searchEngineData.SearchEngine.String())
+		log.Printf("Unknown search engine: %s\n", searchEngineData.SearchEngine.String())
 	}
 	return searchEngineData
 }

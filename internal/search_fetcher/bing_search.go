@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"time"
@@ -81,7 +82,7 @@ func bingSearch(query string, numResults int) []string {
 	param := req.URL.Query()
 	param.Add("q", query)
 	param.Add("responseFilter", "Webpages")
-	param.Add("count", fmt.Sprint(numResults))
+	param.Add("count", fmt.Sprint(50))
 
 	req.URL.RawQuery = param.Encode()
 
@@ -97,7 +98,7 @@ func bingSearch(query string, numResults int) []string {
 		panic(err)
 	}
 
-	println("Bing search status:", resp.Body)
+	log.Println("Bing search status:", resp.Body)
 
 	// Close the response.
 	defer resp.Body.Close()
@@ -114,10 +115,14 @@ func bingSearch(query string, numResults int) []string {
 	}
 
 	// Iterate over search results and print the result name and URL.
-	for _, result := range ans.WebPages.Value {
-		urls = append(urls, result.URL)
+	for index := 0; index < numResults; index++ {
+		url := ans.WebPages.Value[index].URL
+		if valid(url) {
+			urls = append(urls, url)
+		} else {
+			numResults++
+		}
 	}
-
 	return urls
 
 }

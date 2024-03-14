@@ -2,7 +2,6 @@ package search_fetcher
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"os"
 
@@ -13,6 +12,8 @@ import (
 func googleSearch(query string, numResults int) []string {
 	var results customsearch.Search
 	var urls []string
+
+	log.Println("Google search for: " + query)
 
 	// Set up Google Custom Search API credentials and client
 	apiKey := os.Getenv("GCS_KEY") // Your Google API key
@@ -27,7 +28,7 @@ func googleSearch(query string, numResults int) []string {
 	search := cseService.Cse.List().Q(query).Cx(cseID)
 
 	// Execute the search and handle pagination
-	for startIndex := 1; startIndex <= numResults; startIndex += 10 {
+	for startIndex := 1; startIndex <= 50; startIndex += 10 {
 		search.Start(int64(startIndex))
 		results_temp, err := search.Do()
 
@@ -38,8 +39,11 @@ func googleSearch(query string, numResults int) []string {
 	}
 
 	for index := 0; index < numResults; index++ {
-		urls = append(urls, results.Items[index].Link)
+		if valid(results.Items[index].Link) {
+			urls = append(urls, results.Items[index].Link)
+		} else {
+			numResults++
+		}
 	}
-	fmt.Println("Google search for: " + query + "URLs: " + urls[0])
 	return urls
 }
