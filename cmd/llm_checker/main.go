@@ -2,12 +2,14 @@ package main
 
 import (
 	api "chrthal/llm-fact-checker/api/handlers"
+	"chrthal/llm-fact-checker/internal/html_grabber"
 	"chrthal/llm-fact-checker/internal/search_fetcher"
 	"chrthal/llm-fact-checker/models"
 	"fmt"
 
 	"log"
 	"net/http"
+	"os/exec"
 	"sync"
 	"time"
 )
@@ -50,11 +52,48 @@ func queueWatchdog() {
 
 			job.Status = "Resolved"
 
-			// Fetch search result urls
+			// Fetch search results (URLs)
+			log.Println("Start fetching urls from search engines...")
 			for i := range job.SearchEngineData {
 				searchEngineData := &job.SearchEngineData[i]
 				*searchEngineData = search_fetcher.SearchFetcher(*searchEngineData, job.Question, job.PagesToCrawl)
 			}
+
+			log.Println("Start fetching results from llm...")
+			/*for i := range job.LLMData {
+				llmData := &job.LLMData[i]
+				*llmData = llm_fetcher.LLMFetcher(*llmData, job.Question)
+			}*/
+
+			urls := make([]string, 0)
+
+			for i := range job.SearchEngineData {
+				searchEngineData := &job.SearchEngineData[i]
+
+				urls = append(urls, searchEngineData.Urls...)
+			}
+
+			// Fetch and prepare body from urls
+			log.Println("Start fetching and preparing body from urls...")
+			for _, url := range urls {
+				body, err := html_grabber.FetchAndPrepareBody(url)
+				if err != nil {
+					log.Printf("Failed to fetch body from url: %s\n", url)
+					continue
+				}
+				log.Printf("Fetched body from url: %s\n", url)
+				job.CrawledData.WebScrape = append(job.CrawledData.WebScrape, body)
+			}
+			log.Println("Done fetching and preparing body from urls...")
+
+			cmd := exec.Command("python3", "/root/python/compare_texts.py", "claim", "article")
+			output, err := cmd.Output()
+			if err != nil {
+				fmt.Println("Error:", err)
+				return
+			}
+
+			print(output)
 
 			resolvedJobs.Mu.Lock()
 			resolvedJobs.Jobs = append(resolvedJobs.Jobs, job)

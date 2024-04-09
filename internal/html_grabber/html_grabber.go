@@ -1,35 +1,29 @@
 package html_grabber
 
 import (
-	"fmt"
-	"log"
-	"net/http"
+	"regexp"
+	"strings"
 
-	"github.com/PuerkitoBio/goquery"
+	"github.com/gocolly/colly/v2"
 )
 
-func GetData(url string) *goquery.Document {
-	//url := "https://www.google.com/search?q=" + query
-	fmt.Println(url)
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		log.Fatal(err)
-	}
+func FetchAndPrepareBody(url string) (string, error) {
+	c := colly.NewCollector()
 
-	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.54 Safari/537.36")
+	p := ""
 
-	client := &http.Client{}
-	res, err := client.Do(req)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer res.Body.Close()
+	// Set up callbacks to handle scraping events
+	c.OnHTML("body", func(e *colly.HTMLElement) {
+		p = strings.ReplaceAll(e.ChildText("p"), "\n", "")
+		p = strings.ReplaceAll(p, "\t", "")
 
-	doc, err := goquery.NewDocumentFromReader(res.Body)
-	if err != nil {
-		log.Fatal(err)
+		// Remove special characters using regular expressions
+		re := regexp.MustCompile(`[^a-zA-Z0-9\s.]+`)
+		p = re.ReplaceAllString(p, "")
+	})
 
-	}
+	// Visit the URL and start scraping
+	err := c.Visit(url)
 
-	return doc
+	return p, err
 }

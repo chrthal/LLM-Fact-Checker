@@ -25,9 +25,14 @@ COPY web/src ./src
 RUN npm run build
 
 ######## Start a new stage from scratch #######
-FROM alpine:latest  
+#FROM alpine:3.19.1  
+FROM python:3.10
 
-RUN apk --no-cache add ca-certificates
+#RUN apk --no-cache add ca-certificates python3 py3-pip
+
+# Install required Python packages
+
+RUN pip install flair
 
 WORKDIR /root
 
@@ -37,8 +42,11 @@ COPY --from=builder /app/llm_checker .
 # Copy the Pre-built frontend files from the previous stage
 COPY --from=frontend_builder /web/build ./web/build
 
+# Copy python script
+COPY scripts/compare_texts.py ./python/
+
 # Expose port 8080 to the outside world
 EXPOSE 8080
 
-# Command to run the backend
+# Command to run the Python script
 CMD ["./llm_checker"]

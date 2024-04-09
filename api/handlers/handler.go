@@ -4,6 +4,7 @@ import (
 	"chrthal/llm-fact-checker/models"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/contrib/static"
 	"github.com/gin-gonic/gin"
@@ -48,12 +49,21 @@ func SetupRoutes(queue *models.JobQueue, resolvedJobs *models.JobQueue) {
 				Question:         newRequest.Question,
 				PagesToCrawl:     newRequest.PagesToCrawl,
 				SearchEngineData: make([]models.SearchEngineData, len(newRequest.SearchEngines)),
+				LLMData:          make([]models.LLMData, len(newRequest.LLMs)),
+				StartDate:        time.Now(),
+				LastUpdate:       time.Now(),
 			}
 
 			for i, engine := range newRequest.SearchEngines {
 				newJob.SearchEngineData[i] = models.SearchEngineData{
 					SearchEngine: engine,
 					Urls:         make([]string, 0),
+				}
+			}
+
+			for i, llm := range newRequest.LLMs {
+				newJob.LLMData[i] = models.LLMData{
+					LLM: llm,
 				}
 			}
 

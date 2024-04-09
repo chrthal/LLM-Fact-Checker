@@ -2,15 +2,14 @@ package llm_fetcher
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"os"
 
 	openai "github.com/sashabaranov/go-openai"
 )
 
-func AskOpenAI(query string) string {
-	client := openai.NewClient(os.Getenv("OPENAI_KEY"))
+func gpt3_fetcher(question string) string {
+	client := openai.NewClient(os.Getenv("OPENAI_API_KEY"))
 	resp, err := client.CreateChatCompletion(
 		context.Background(),
 		openai.ChatCompletionRequest{
@@ -18,16 +17,35 @@ func AskOpenAI(query string) string {
 			Messages: []openai.ChatCompletionMessage{
 				{
 					Role:    openai.ChatMessageRoleUser,
-					Content: query,
+					Content: question,
 				},
 			},
 		},
 	)
 
 	if err != nil {
-		fmt.Printf("ChatCompletion error: %v\n", err)
-		log.Fatal(err)
+		log.Fatalln("ChatCompletion error: %v\n", err)
 	}
+	return resp.Choices[0].Message.Content
+}
 
+func gpt4_fetcher(question string) string {
+	client := openai.NewClient(os.Getenv("OPENAI_API_KEY"))
+	resp, err := client.CreateChatCompletion(
+		context.Background(),
+		openai.ChatCompletionRequest{
+			Model: openai.GPT4,
+			Messages: []openai.ChatCompletionMessage{
+				{
+					Role:    openai.ChatMessageRoleUser,
+					Content: question,
+				},
+			},
+		},
+	)
+
+	if err != nil {
+		log.Fatalln("ChatCompletion error: %v\n", err)
+	}
 	return resp.Choices[0].Message.Content
 }

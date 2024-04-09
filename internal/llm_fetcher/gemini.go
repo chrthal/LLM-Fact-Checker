@@ -25,5 +25,5 @@ func askGemini(question string) string {
 	if err != nil {
 		log.Fatal(err)
 	}
-	return resp.Content
+	return resp.Candidates[0].Content.Role
 }
