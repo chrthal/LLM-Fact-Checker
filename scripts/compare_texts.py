@@ -1,26 +1,41 @@
-from flair.embeddings import TransformerWordEmbeddings
-from flair.data import Sentence
 import sys
+import logging
+import json
+from flair.embeddings import TransformerDocumentEmbeddings
+from flair.data import Sentence
+from scipy.spatial.distance import cosine
+
+logging.basicConfig(level=logging.INFO)
+
+def load_and_embed(text):
+    # Load the pre-trained model
+    model = TransformerDocumentEmbeddings('bert-base-uncased')
+    # Create a Flair Sentence object
+    sentence = Sentence(text)
+    # Embed the text using the model
+    model.embed(sentence)
+    return sentence.embedding
+
+def calculate_similarity(embedding1, embedding2):
+    # Calculate cosine similarity (convert to cosine distance to similarity)
+    return 1 - cosine(embedding1, embedding2)
 
 def compare_texts(claim, article):
-    # Load pre-trained transformer word embeddings
-    embeddings = TransformerWordEmbeddings('bert-base-uncased')
+    #logging.info("Start comparing")
 
-    # Create Sentence objects for the claim and article
-    claim_sentence = Sentence(claim)
-    article_sentence = Sentence(article)
-
-    # Embed the sentences
-    embeddings.embed(claim_sentence)
-    embeddings.embed(article_sentence)
-
-    # Compute cosine similarity between the sentence embeddings
-    similarity = claim_sentence.get_embedding().similarity(article_sentence.get_embedding())
-
-    return similarity
+    # Load and embed both articles
+    #logging.info("Loading and embedding claim")
+    embedding1 = load_and_embed(claim)
+    #logging.info("Loading and embedding article")
+    embedding2 = load_and_embed(article)
+    
+    # Calculate and print the similarity
+    #logging.info("Calculating similarity")
+    similarity = calculate_similarity(embedding1, embedding2)
+    #logging.info(f"Similarity calculated: {similarity}")
+    print(json.dumps({"similarity": similarity}))
 
 if __name__ == "__main__":
     claim = sys.argv[1]
     article = sys.argv[2]
     similarity_score = compare_texts(claim, article)
-    print(similarity_score)

@@ -7,12 +7,17 @@ import (
 	"chrthal/llm-fact-checker/models"
 	"fmt"
 
+	"encoding/json"
 	"log"
 	"net/http"
 	"os/exec"
 	"sync"
 	"time"
 )
+
+type PythonOutput struct {
+	Similarity float64 `json:"similarity"`
+}
 
 var (
 	jobQueue = models.JobQueue{
@@ -65,6 +70,9 @@ func queueWatchdog() {
 				*llmData = llm_fetcher.LLMFetcher(*llmData, job.Question)
 			}*/
 
+			// TEST DATA
+			job.CrawledData.LLMScrape = "Paris"
+
 			urls := make([]string, 0)
 
 			for i := range job.SearchEngineData {
@@ -86,18 +94,30 @@ func queueWatchdog() {
 			}
 			log.Println("Done fetching and preparing body from urls...")
 
-			cmd := exec.Command("python3", "/root/python/compare_texts.py", "claim", "article")
-			output, err := cmd.Output()
-			if err != nil {
-				fmt.Println("Error:", err)
-				return
+			/* ---------- Start Comparison ----- */
+			log.Println("Start comparison")
+			sum_similarity := 0.00
+			for _, webScrape := range job.CrawledData.WebScrape {
+				cmd := exec.Command("python", "/root/python/compare_texts.py", job.CrawledData.LLMScrape, webScrape)
+				// Get the output from the command
+				output, err := cmd.CombinedOutput()
+				if err != nil {
+					log.Println(err)
+				}
+
+				// Parse the output into the predefined structure
+				var result PythonOutput
+				if err := json.Unmarshal(output, &result); err != nil {
+					log.Println(err)
+				}
+				sum_similarity += result.Similarity
 			}
 
-			print(output)
-
+			job.CrawledData.Similarity = sum_similarity / float64(len(job.CrawledData.WebScrape))
 			resolvedJobs.Mu.Lock()
 			resolvedJobs.Jobs = append(resolvedJobs.Jobs, job)
 			resolvedJobs.Mu.Unlock()
+			log.Println("Job resolved...")
 		}
 		time.Sleep(time.Second)
 	}

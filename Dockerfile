@@ -25,14 +25,7 @@ COPY web/src ./src
 RUN npm run build
 
 ######## Start a new stage from scratch #######
-#FROM alpine:3.19.1  
 FROM python:3.10
-
-#RUN apk --no-cache add ca-certificates python3 py3-pip
-
-# Install required Python packages
-
-RUN pip install flair
 
 WORKDIR /root
 
@@ -44,6 +37,8 @@ COPY --from=frontend_builder /web/build ./web/build
 
 # Copy python script
 COPY scripts/compare_texts.py ./python/
+COPY scripts/requirements.txt ./python/
+RUN pip install -r python/requirements.txt
 
 # Expose port 8080 to the outside world
 EXPOSE 8080
