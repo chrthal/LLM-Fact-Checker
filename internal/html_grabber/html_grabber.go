@@ -18,8 +18,7 @@ func FetchAndPrepareBody(url string) (string, error) {
 		p = strings.ReplaceAll(p, "\t", "")
 
 		// Remove special characters using regular expressions
-		re := regexp.MustCompile(`[^a-zA-Z0-9\s.]+`)
-		p = re.ReplaceAllString(p, "")
+		p = regexp.MustCompile(`[^a-zA-Z0-9 ]+`).ReplaceAllString(p, "")
 	})
 
 	// Visit the URL and start scraping

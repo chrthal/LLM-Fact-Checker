@@ -6,9 +6,9 @@ const (
 	GPT4 LLM = iota
 	GPT3
 	Gemini
-	TestData
+	Ollama
 )
 
 func (llm LLM) String() string {
-	return [...]string{"GPT4", "GPT3.5", "Gemini", "TestData"}[llm]
+	return [...]string{"GPT4", "GPT3.5", "Gemini", "Ollama"}[llm]
 }

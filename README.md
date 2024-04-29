@@ -11,7 +11,8 @@
 - ```GCS_KEY = <API_KEY> ```
 - ```GCS_ID = <ID> ```
 - ```BING_KEY = <API_KEY> ```
-
+- ```OLLAMA_MODEL = <MODEL``` https://ollama.com/library
+    
 ## Start with Makefile
 - ```make app```
 

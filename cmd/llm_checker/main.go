@@ -3,6 +3,7 @@ package main
 import (
 	api "chrthal/llm-fact-checker/api/handlers"
 	"chrthal/llm-fact-checker/internal/html_grabber"
+	"chrthal/llm-fact-checker/internal/llm_fetcher"
 	"chrthal/llm-fact-checker/internal/search_fetcher"
 	"chrthal/llm-fact-checker/models"
 	"fmt"
@@ -65,13 +66,11 @@ func queueWatchdog() {
 			}
 
 			log.Println("Start fetching results from llm...")
-			/*for i := range job.LLMData {
+			for i := range job.LLMData {
 				llmData := &job.LLMData[i]
 				*llmData = llm_fetcher.LLMFetcher(*llmData, job.Question)
-			}*/
-
-			// TEST DATA
-			job.CrawledData.LLMScrape = "Paris"
+				job.CrawledData.LLMScrape = llmData.Response
+			}
 
 			urls := make([]string, 0)
 
@@ -98,6 +97,8 @@ func queueWatchdog() {
 			log.Println("Start comparison")
 			sum_similarity := 0.00
 			for _, webScrape := range job.CrawledData.WebScrape {
+				log.Println(webScrape)
+				log.Println(job.CrawledData.LLMScrape)
 				cmd := exec.Command("python", "/root/python/compare_texts.py", job.CrawledData.LLMScrape, webScrape)
 				// Get the output from the command
 				output, err := cmd.CombinedOutput()
