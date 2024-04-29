@@ -10,9 +10,18 @@ services:
       - GCS_KEY=${GCS_KEY}
       - GCS_ID=${GCS_ID}
       - BING_KEY=${BING_KEY}
+      - OLLAMA_HOST=http://ollama:11434
+      #- OLLAMA_MODEL=nous-hermes:7b-llama2-q2_K
+      - OLLAMA_VERBOSE=false
     networks:
       - app-network
-
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - 11434:11434
+    tty: true
+    networks:
+      - app-network
 networks:
   app-network:
     driver: bridge
