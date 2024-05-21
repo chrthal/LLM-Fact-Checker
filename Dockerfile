@@ -17,9 +17,10 @@ WORKDIR /web
 
 COPY web/package.json ./
 RUN npm install
+RUN npm install -D tailwindcss
+RUN npx tailwindcss init
 
-COPY web/public ./public
-COPY web/src ./src
+COPY web/ ./
 
 # Build the React app
 RUN npm run build

@@ -14,7 +14,7 @@ var (
 	id = 0
 )
 
-func SetupRoutes(queue *models.JobQueue, resolvedJobs *models.JobQueue) {
+func SetupRoutes(queue *models.JobQueue, resolvedJobs *models.JobQueue, runningJobs *int) {
 	router := gin.Default()
 
 	router.Use(static.Serve("/", static.LocalFile("./web/build", true)))
@@ -35,7 +35,14 @@ func SetupRoutes(queue *models.JobQueue, resolvedJobs *models.JobQueue) {
 			queue.Mu.Unlock()
 			c.JSON(http.StatusOK, allJobs)
 		})
-
+		api.GET("/status", func(c *gin.Context) {
+			status := map[string]interface{}{
+				"queuedJobs":   len(queue.Jobs),
+				"runningJobs":  runningJobs,
+				"resolvedJobs": len(resolvedJobs.Jobs),
+			}
+			c.JSON(http.StatusOK, status)
+		})
 		// Endpoint to add new job
 		api.POST("/addJob", func(c *gin.Context) {
 			var newRequest models.JobRequest

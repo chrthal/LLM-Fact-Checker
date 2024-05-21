@@ -6,14 +6,16 @@ import (
 	"chrthal/llm-fact-checker/internal/llm_fetcher"
 	"chrthal/llm-fact-checker/internal/search_fetcher"
 	"chrthal/llm-fact-checker/models"
-	"fmt"
 
-	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
-	"os/exec"
+	//"os/exec"
 	"sync"
 	"time"
+
+	strutil "github.com/adrg/strutil"
+	"github.com/adrg/strutil/metrics"
 )
 
 type PythonOutput struct {
@@ -29,12 +31,13 @@ var (
 		Jobs: make([]models.Job, 0),
 		Mu:   sync.Mutex{},
 	}
+	runningJobs = 0
 )
 
 func main() {
 	go queueWatchdog()
 
-	api.SetupRoutes(&jobQueue, &resolvedJobs)
+	api.SetupRoutes(&jobQueue, &resolvedJobs, &runningJobs)
 	log.Println("Starting server on :8080...")
 
 	if err := http.ListenAndServe(":8080", nil); err != nil {
@@ -53,7 +56,7 @@ func queueWatchdog() {
 			// Remove the first job from the queue
 			jobQueue.Jobs = jobQueue.Jobs[1:]
 			jobQueue.Mu.Unlock()
-
+			runningJobs++
 			fmt.Printf("Processing job: %+v\n", job)
 
 			job.Status = "Resolved"
@@ -99,19 +102,21 @@ func queueWatchdog() {
 			for _, webScrape := range job.CrawledData.WebScrape {
 				log.Println(webScrape)
 				log.Println(job.CrawledData.LLMScrape)
-				cmd := exec.Command("python", "/root/python/compare_texts.py", job.CrawledData.LLMScrape, webScrape)
+
+				//cmd := exec.Command("python", "/root/python/compare_texts.py", string(llmScrapeArg), string(webScrapeArg))
+				similarity := strutil.Similarity(job.CrawledData.LLMScrape, webScrape, metrics.NewJaccard())
 				// Get the output from the command
-				output, err := cmd.CombinedOutput()
-				if err != nil {
-					log.Println(err)
-				}
+				// output, err := cmd.CombinedOutput()
+				// if err != nil {
+				// 	log.Println(err)
+				// }
 
 				// Parse the output into the predefined structure
-				var result PythonOutput
-				if err := json.Unmarshal(output, &result); err != nil {
-					log.Println(err)
-				}
-				sum_similarity += result.Similarity
+				// var result PythonOutput
+				// if err := json.Unmarshal(output, &result); err != nil {
+				// 	log.Println(err)
+				// }
+				sum_similarity += similarity
 			}
 
 			job.CrawledData.Similarity = sum_similarity / float64(len(job.CrawledData.WebScrape))
@@ -119,6 +124,7 @@ func queueWatchdog() {
 			resolvedJobs.Jobs = append(resolvedJobs.Jobs, job)
 			resolvedJobs.Mu.Unlock()
 			log.Println("Job resolved...")
+			runningJobs--
 		}
 		time.Sleep(time.Second)
 	}
