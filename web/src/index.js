@@ -3,12 +3,13 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import App from './App';
-import ResolvedJobs from './components/ResolvedJobs';
+import './index.css'; // Import Tailwind CSS
+import Dashboard from './components/Dashboard';
 
 ReactDOM.render(
   <React.StrictMode>
     <App>
-      <ResolvedJobs /> {/* Render the DashboardOverview component within App */}
+      <Dashboard /> 
     </App>
   </React.StrictMode>,
   document.getElementById('root')
