@@ -27,12 +27,23 @@ export const fetchResolvedJobs = async () => {
 
 export const addJob = async (jobData) => {
   try {
-    console.log('Request payload:', jobData); // Log the request payload
-    const response = await apiClient.post('/addJob', jobData); // Adjust the endpoint as necessary
-    console.log('Response data:', response.data); // Log the response data
+    console.log('Request payload:', jobData); 
+    const response = await apiClient.post('/addJob', jobData); 
+    console.log('Response data:', response.data); 
     return response.data;
   } catch (error) {
     console.error('Error adding job:', error); // Log the error
     throw error;
   }
 }
+
+export const setApiKeys = async (apiKeys) => {
+  try {
+    console.log('Set config', apiKeys);
+    const response = await apiClient.post('/config', apiKeys); 
+    return response.data;
+  } catch (error) {
+    console.error('Error setting API keys:', error); // Log the error
+    throw error;
+  }
+};

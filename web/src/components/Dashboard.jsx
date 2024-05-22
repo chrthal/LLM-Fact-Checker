@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { addJob, fetchResolvedJobs, fetchStatus } from "../api/jobs";
 import JobFormModal from './JobFormModal';
+import SettingsModal from './SettingsModal';
 
 export default function Dashboard() {
   const [jobs, setJobs] = useState([]);
+  const [config, setConfig] = useState(null);
   const [error, setError] = useState(null);
   const [status, setStatus] = useState({
     queuedJobs: 0,
@@ -12,6 +14,7 @@ export default function Dashboard() {
   });
   const [request, setRequest] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false); 
 
   useEffect(() => {
     const getStatus = async () => {
@@ -66,6 +69,15 @@ export default function Dashboard() {
       alert("Failed to add job: " + error.message);
     }
   };
+  const handleSettings = async (configData) => {
+    try {
+      const newConfig = await setConfig(configData);
+      setRequest({ ...request, config: [newConfig] }); // Assuming there's a single job per request
+      alert("Settings updated successfully!");
+    } catch (error) {
+      alert("Failed to add job: " + error.message);
+    }
+  };
   return (
     <div className="min-h-screen bg-zinc-100 dark:bg-zinc-900 p-4">
       <div className="flex justify-between items-center mb-4">
@@ -73,7 +85,8 @@ export default function Dashboard() {
           Dashboard
         </h1>
         <div className="flex space-x-2">
-          <button className="bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 px-4 py-2 rounded">
+          <button className="bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 px-4 py-2 rounded" 
+            onClick={() => setIsSettingsModalOpen(true)}>
             Settings
           </button>
           <button
@@ -174,6 +187,11 @@ export default function Dashboard() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSubmit={handleAddJob}
+      />
+      <SettingsModal
+        isOpen={isSettingsModalOpen}
+        onClose={() => setIsSettingsModalOpen(false)}
+        onSubmit={handleSettings}
       />
     </div>
   );

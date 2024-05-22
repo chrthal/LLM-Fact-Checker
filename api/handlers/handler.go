@@ -4,6 +4,7 @@ import (
 	"chrthal/llm-fact-checker/models"
 	"fmt"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/gin-gonic/contrib/static"
@@ -82,6 +83,23 @@ func SetupRoutes(queue *models.JobQueue, resolvedJobs *models.JobQueue, runningJ
 
 			c.JSON(http.StatusOK, gin.H{"success": true})
 			id += 1
+		})
+
+		api.POST("/config", func(c *gin.Context) {
+			var newConfig models.Config
+			if err := c.BindJSON(&newConfig); err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				return
+			}
+
+			os.Setenv("OPENAI_API_KEY", newConfig.OpenAIKey)
+			os.Setenv("GCS_KEY", newConfig.GCSKey)
+			os.Setenv("GCS_ID", newConfig.GCSID)
+			os.Setenv("BING_KEY", newConfig.BingKey)
+			os.Setenv("OLLAMA_HOST", newConfig.OllamaHost)
+			os.Setenv("OLLAMA_VERBOSE", newConfig.OllamaVerbose)
+
+			c.JSON(http.StatusOK, gin.H{"status": "Environment variables set successfully"})
 		})
 	}
 
