@@ -26,7 +26,7 @@ COPY web/ ./
 RUN npm run build
 
 ######## Start a new stage from scratch #######
-FROM python:3.10
+FROM python:3.11
 
 WORKDIR /root
 
@@ -39,7 +39,7 @@ COPY --from=frontend_builder /web/build ./web/build
 # Copy python script
 COPY scripts/compare_texts.py ./python/
 COPY scripts/requirements.txt ./python/
-#RUN pip install -r python/requirements.txt
+RUN pip install -r python/requirements.txt
 
 # Expose port 8080 to the outside world
 EXPOSE 8080
