@@ -6,16 +6,16 @@ import (
 	"chrthal/llm-fact-checker/internal/llm_fetcher"
 	"chrthal/llm-fact-checker/internal/search_fetcher"
 	"chrthal/llm-fact-checker/models"
+	"encoding/json"
+	"os/exec"
 
 	"fmt"
 	"log"
 	"net/http"
+
 	//"os/exec"
 	"sync"
 	"time"
-
-	strutil "github.com/adrg/strutil"
-	"github.com/adrg/strutil/metrics"
 )
 
 type PythonOutput struct {
@@ -103,20 +103,23 @@ func queueWatchdog() {
 				log.Println(webScrape)
 				log.Println(job.CrawledData.LLMScrape)
 
-				//cmd := exec.Command("python", "/root/python/compare_texts.py", string(llmScrapeArg), string(webScrapeArg))
-				similarity := strutil.Similarity(job.CrawledData.LLMScrape, webScrape, metrics.NewJaccard())
-				// Get the output from the command
-				// output, err := cmd.CombinedOutput()
-				// if err != nil {
-				// 	log.Println(err)
-				// }
+				//similarity := strutil.Similarity(job.CrawledData.LLMScrape, webScrape, metrics.NewJaccard()) // Go Similarity
 
-				// Parse the output into the predefined structure
-				// var result PythonOutput
-				// if err := json.Unmarshal(output, &result); err != nil {
-				// 	log.Println(err)
-				// }
-				sum_similarity += similarity
+				cmd := exec.Command("python", "/root/python/compare_texts.py", job.CrawledData.LLMScrape, webScrape)
+
+				output, err := cmd.CombinedOutput()
+				if err != nil {
+					fmt.Printf("Error: %v\n", err)
+				}
+
+				// Print the raw output
+				fmt.Printf("Raw Output: %s\n", output)
+				// Parse the JSON output
+				var response PythonOutput
+				if err := json.Unmarshal(output, &response); err != nil {
+					fmt.Printf("JSON Unmarshal Error: %v\n", err)
+				}
+				sum_similarity += response.Similarity
 			}
 
 			job.CrawledData.Similarity = sum_similarity / float64(len(job.CrawledData.WebScrape))
