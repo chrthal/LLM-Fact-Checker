@@ -159,24 +159,24 @@ export default function Dashboard() {
               jobs &&
               jobs.map((job, index) => (
                 <tr key={index}>
-                  <td className="py-3 px-6">{job.jobId}</td>
-                  <td className="py-3 px-6">{job.question}</td>
-                  <td className="py-3 px-6">{job.pagesToCrawl}</td>
-                  <td className="py-3 px-6">
+                  <td className="py-3 px-6 text-white">{job.jobId}</td>
+                  <td className="py-3 px-6 text-white">{job.question}</td>
+                  <td className="py-3 px-6 text-white">{job.pagesToCrawl}</td>
+                  <td className="py-3 px-6 text-white">
                     {job.largeLanguageModelMData
                       .map((llm) => llmMappings[llm.LLM])
                       .join(", ")}
                   </td>
-                  <td className="py-3 px-6">
+                  <td className="py-3 px-6 text-white">
                     {job.searchEngineData
                       .map(
                         (engine) => searchEngineMappings[engine.SearchEngine]
                       )
                       .join(", ")}
                   </td>
-                  <td className="py-3 px-6">{job.crawledData.similarity}</td>
-                  <td className="py-3 px-6">{job.startDate}</td>
-                  <td className="py-3 px-6">{job.status}</td>
+                  <td className="py-3 px-6 text-white">{job.crawledData.similarity}</td>
+                  <td className="py-3 px-6 text-white">{job.startDate}</td>
+                  <td className="py-3 px-6 text-white">{job.status}</td>
                 </tr>
               ))
             )}
