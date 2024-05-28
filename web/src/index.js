@@ -3,7 +3,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import App from './App';
-import './index.css'; // Import Tailwind CSS
+import './index.css';
 import Dashboard from './components/Dashboard';
 
 ReactDOM.render(

@@ -9,7 +9,7 @@ const apiClient = axios.create({
 
 export const fetchStatus = async () => {
   try {
-    const response = await apiClient.get('/status'); // Adjust the endpoint as necessary
+    const response = await apiClient.get('/status'); 
     return response.data;
   } catch (error) {
     throw error;
@@ -18,7 +18,7 @@ export const fetchStatus = async () => {
 
 export const fetchResolvedJobs = async () => {
   try {
-    const response = await apiClient.get('/resolvedJobs'); // Adjust the endpoint as necessary
+    const response = await apiClient.get('/resolvedJobs');
     return response.data;
   } catch (error) {
     throw error;
